@@ -38,6 +38,7 @@ class MainViewModel(
     fun deleteAllMessages() {
         viewModelScope.launch {
             messageDao.deleteAll()
+            app.eventLog.clear()
         }
     }
 

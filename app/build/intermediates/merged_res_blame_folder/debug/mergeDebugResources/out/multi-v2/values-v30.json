@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.nokakao.interceptor.app-mergeDebugResources-49:/values-v30/values-v30.xml",
+            "outputFile": "com.nokakao.interceptor.app-mergeDebugResources-46:/values-v30/values-v30.xml",
             "map": [
                 {
-                    "source": "/Users/yonseiconu/.gradle/caches/8.13/transforms/34699632f65a5a88e71627610b70d6b9/transformed/material3-release/res/values-v30/values-v30.xml",
+                    "source": "/Users/yonseiconu/.gradle/caches/9.4.1/transforms/37642994810b456189ecbe2ffa701b76/transformed/material3-release/res/values-v30/values-v30.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

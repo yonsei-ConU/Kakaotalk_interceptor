@@ -30,6 +30,15 @@ class InterceptorEventLog(
         }
     }
 
+    /**
+     * Clears all log entries.
+     */
+    fun clear() {
+        synchronized(this) {
+            _entries.value = emptyList()
+        }
+    }
+
     companion object {
         private const val MAX_ENTRIES_DEFAULT = 200
     }
