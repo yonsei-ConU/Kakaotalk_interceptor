@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.nokakao.interceptor.NotificationApp
+import com.nokakao.interceptor.data.SettingsRepository
 import com.nokakao.interceptor.data.local.MessageDao
 import com.nokakao.interceptor.data.local.MessageEntity
 import com.nokakao.interceptor.logging.InterceptorEventLog
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
  */
 class MainViewModel(
     private val messageDao: MessageDao,
+    private val settingsRepository: SettingsRepository,
     private val app: NotificationApp,
 ) : ViewModel() {
 
@@ -26,6 +28,13 @@ class MainViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList(),
+        )
+
+    val showLogs: StateFlow<Boolean> = settingsRepository.showLogsFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = true,
         )
 
     /** Newest-first lines emitted by [KakaoNotificationListener]. */
@@ -42,14 +51,21 @@ class MainViewModel(
         }
     }
 
+    fun updateShowLogs(showLogs: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.updateShowLogs(showLogs)
+        }
+    }
+
     class Factory(
         private val messageDao: MessageDao,
+        private val settingsRepository: SettingsRepository,
         private val app: NotificationApp,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             require(modelClass.isAssignableFrom(MainViewModel::class.java))
-            return MainViewModel(messageDao, app) as T
+            return MainViewModel(messageDao, settingsRepository, app) as T
         }
     }
 }

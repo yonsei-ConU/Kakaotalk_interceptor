@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.nokakao.interceptor.app-mergeDebugResources-46:/values-zh-rHK/values-zh-rHK.xml",
+            "outputFile": "com.nokakao.interceptor.app-mergeDebugResources-54:/values-zh-rHK/values-zh-rHK.xml",
             "map": [
                 {
                     "source": "/Users/yonseiconu/.gradle/caches/9.4.1/transforms/37642994810b456189ecbe2ffa701b76/transformed/material3-release/res/values-zh-rHK/values-zh-rHK.xml",

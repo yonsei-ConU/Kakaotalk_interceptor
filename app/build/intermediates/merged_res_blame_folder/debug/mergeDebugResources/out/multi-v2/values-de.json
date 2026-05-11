@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.nokakao.interceptor.app-mergeDebugResources-46:/values-de/values-de.xml",
+            "outputFile": "com.nokakao.interceptor.app-mergeDebugResources-54:/values-de/values-de.xml",
             "map": [
                 {
                     "source": "/Users/yonseiconu/.gradle/caches/9.4.1/transforms/1940f25bce18d9547d7265e2db5ac0c8/transformed/core-1.15.0/res/values-de/values-de.xml",

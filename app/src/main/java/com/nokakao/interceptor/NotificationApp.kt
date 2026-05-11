@@ -1,6 +1,7 @@
 package com.nokakao.interceptor
 
 import android.app.Application
+import com.nokakao.interceptor.data.SettingsRepository
 import com.nokakao.interceptor.data.local.AppDatabase
 import com.nokakao.interceptor.logging.InterceptorEventLog
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,10 @@ class NotificationApp : Application() {
 
     val database: AppDatabase by lazy {
         AppDatabase.create(this)
+    }
+
+    val settingsRepository: SettingsRepository by lazy {
+        SettingsRepository(this)
     }
 
     /** In-memory activity log for the notification interceptor (UI + listener share this). */

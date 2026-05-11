@@ -15,18 +15,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings as SettingsIcon
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -41,10 +43,14 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.nokakao.interceptor.data.local.MessageEntity
 import com.nokakao.interceptor.logging.InterceptorLogEntry
 import com.nokakao.interceptor.notification.KakaoNotificationListener
 import com.nokakao.interceptor.ui.MainViewModel
+import com.nokakao.interceptor.ui.SettingsScreen
 import com.nokakao.interceptor.ui.theme.NoKakaoTheme
 import com.nokakao.interceptor.util.isNotificationListenerEnabled
 import java.text.DateFormat
@@ -57,29 +63,50 @@ class MainActivity : ComponentActivity() {
 
         val app = application as NotificationApp
         val dao = app.database.messageDao()
+        val settingsRepository = app.settingsRepository
 
         setContent {
             NoKakaoTheme {
                 val viewModel: MainViewModel = viewModel(
-                    factory = MainViewModel.Factory(dao, app),
+                    factory = MainViewModel.Factory(dao, settingsRepository, app),
                 )
-                val messages by viewModel.messages.collectAsStateWithLifecycle()
-                val logEntries by viewModel.logEntries.collectAsStateWithLifecycle()
-                val isConnected by viewModel.isListenerConnected.collectAsStateWithLifecycle()
-                val lastPkg by viewModel.lastPackageName.collectAsStateWithLifecycle()
+                
+                val navController = rememberNavController()
+                
+                NavHost(navController = navController, startDestination = "home") {
+                    composable("home") {
+                        val messages by viewModel.messages.collectAsStateWithLifecycle()
+                        val logEntries by viewModel.logEntries.collectAsStateWithLifecycle()
+                        val isConnected by viewModel.isListenerConnected.collectAsStateWithLifecycle()
+                        val lastPkg by viewModel.lastPackageName.collectAsStateWithLifecycle()
+                        val showLogs by viewModel.showLogs.collectAsStateWithLifecycle()
 
-                HomeScreen(
-                    isListenerConnected = isConnected,
-                    lastPackageName = lastPkg,
-                    logEntries = logEntries,
-                    messages = messages,
-                    onOpenNotificationSettings = {
-                        startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                    },
-                    onDeleteAllMessages = {
-                        viewModel.deleteAllMessages()
+                        HomeScreen(
+                            isListenerConnected = isConnected,
+                            lastPackageName = lastPkg,
+                            logEntries = logEntries,
+                            messages = messages,
+                            showLogs = showLogs,
+                            onOpenNotificationSettings = {
+                                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                            },
+                            onDeleteAllMessages = {
+                                viewModel.deleteAllMessages()
+                            },
+                            onOpenSettings = {
+                                navController.navigate("settings")
+                            }
+                        )
                     }
-                )
+                    composable("settings") {
+                        val showLogs by viewModel.showLogs.collectAsStateWithLifecycle()
+                        SettingsScreen(
+                            showLogs = showLogs,
+                            onShowLogsChanged = { viewModel.updateShowLogs(it) },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
             }
         }
     }
@@ -92,8 +119,10 @@ private fun HomeScreen(
     lastPackageName: String?,
     logEntries: List<InterceptorLogEntry>,
     messages: List<MessageEntity>,
+    showLogs: Boolean,
     onOpenNotificationSettings: () -> Unit,
     onDeleteAllMessages: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -109,7 +138,6 @@ private fun HomeScreen(
                     context.isNotificationListenerEnabled(KakaoNotificationListener::class.java)
                 
                 if (permissionGranted) {
-                    // Try to nudge the system to bind the service if it's not already
                     NotificationListenerService.requestRebind(
                         ComponentName(context, KakaoNotificationListener::class.java)
                     )
@@ -122,7 +150,14 @@ private fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Intercepted messages") })
+            TopAppBar(
+                title = { Text("Intercepted messages") },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.SettingsIcon, contentDescription = "Settings")
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onDeleteAllMessages) {
@@ -162,24 +197,26 @@ private fun HomeScreen(
                 }
             }
 
-            item {
-                Text(
-                    text = "Activity log",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
-
-            if (logEntries.isEmpty()) {
+            if (showLogs) {
                 item {
                     Text(
-                        text = "No events yet. Send a Kakao message to see listener activity.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = "Activity log",
+                        style = MaterialTheme.typography.titleMedium,
                     )
                 }
-            } else {
-                items(logEntries, key = { "log_${it.id}" }) { entry ->
-                    LogEntryRow(entry)
+
+                if (logEntries.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No events yet. Send a Kakao message to see listener activity.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                } else {
+                    items(logEntries, key = { "log_${it.id}" }) { entry ->
+                        LogEntryRow(entry)
+                    }
                 }
             }
 
