@@ -53,10 +53,6 @@ class KakaoNotificationListener : NotificationListenerService() {
         eventLog.append(msg)
     }
 
-    override fun onNotificationPosted(sbn: StatusBarNotification) {
-        handleNotification(sbn)
-    }
-
     override fun onNotificationPosted(sbn: StatusBarNotification, rankingMap: RankingMap) {
         handleNotification(sbn)
     }
