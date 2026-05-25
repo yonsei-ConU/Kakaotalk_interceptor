@@ -1,9 +1,29 @@
+# Built-in Kotlin
+.kotlin/
+
+# Gradle files
+.gradle/
+build/
+/*/build/
+
+# IDE files
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/
+local.properties
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Gradle Wrapper (Optional, but usually kept. If you want to exclude it, uncomment below)
+# !gradle/wrapper/gradle-wrapper.jar
+# !gradle/wrapper/gradle-wrapper.properties
+# !gradlew
+# !gradlew.bat
+
+# Log files
+*.log
+
+# Android Studio Preview and Layout Inspector
+/captures/
+*.hprof
